@@ -1,100 +1,82 @@
-import collections
-import math
+from collections import defaultdict, deque
 
 
-class Graph:
+class Graph(object):
     def __init__(self):
-        self.vertices = set()
-        # makes the default value for all vertices an empty list
-        self.edges = collections.defaultdict(list)
-        self.weights = {}
+        self.nodes = set()
+        self.edges = defaultdict(list)
+        self.distances = {}
 
-    def add_vertex(self, value):
-        self.vertices.add(value)
+    def add_node(self, value):
+        self.nodes.add(value)
 
-    def add_edge(self, from_vertex, to_vertex, distance):
-        if from_vertex == to_vertex: pass
-        self.edges[from_vertex].append(to_vertex)
-        self.weights[(from_vertex, to_vertex)] = distance
-
-    def __str__(self):
-        string = "Vertices: " + str(self.vertices) + "\n"
-        string += "Edges: " + str(self.edges) + "\n"
-        string += "Weights: " + str(self.weights)
-        return string
+    def add_edge(self, from_node, to_node, distance):
+        self.edges[from_node].append(to_node)
+        self.edges[to_node].append(from_node)
+        self.distances[(from_node, to_node)] = distance
 
 
-def dijkstra(graph, start):
-    # initializations
-    S = set()
+def dijkstra(graph, initial):
+    visited = {initial: 0}
+    path = {}
 
-    # lenght_of_shortest_path represents the length shortest distance paths from start -> v, for v in lenght_of_shortest_path.
-    # We initialize it so that every vertex has a path of infinity
-    lenght_of_shortest_path = dict.fromkeys(list(graph.vertices), math.inf)
-    previous = dict.fromkeys(list(graph.vertices), None)
+    nodes = set(graph.nodes)
 
-    # then we set the path length of the start vertex to 0
-    lenght_of_shortest_path[start] = 0
+    while nodes:
+        min_node = None
+        for node in nodes:
+            if node in visited:
+                if min_node is None:
+                    min_node = node
+                elif visited[node] < visited[min_node]:
+                    min_node = node
+        if min_node is None:
+            break
 
-    # while there exists a vertex v not in S
-    while S != graph.vertices:
-        # let v be the closest vertex that has not been visited...it will begin at 'start'
-        v = min((set(lenght_of_shortest_path.keys()) - S), key=lenght_of_shortest_path.get)
+        nodes.remove(min_node)
+        current_weight = visited[min_node]
 
-        # for each neighbor of v not in S
-        for neighbor in set(graph.edges[v]) - S:
-            new_path = lenght_of_shortest_path[v] + graph.weights[v, neighbor]
+        for edge in graph.edges[min_node]:
+            try:
+                weight = current_weight + graph.distances[(min_node, edge)]
+            except:
+                continue
+            if edge not in visited or weight < visited[edge]:
+                visited[edge] = weight
+                path[edge] = min_node
 
-            # is the new path from neighbor through
-            if new_path < lenght_of_shortest_path[neighbor]:
-                # since it's optimal, update the shortest path for neighbor
-                lenght_of_shortest_path[neighbor] = new_path
-
-                # set the previous vertex of neighbor to v
-                previous[neighbor] = v
-
-        S.add(v)
-    return (lenght_of_shortest_path, previous)
-
-
-def shortest_path(graph, start, end):
-    delta, previous = dijkstra(graph, start)
-
-    path = []
-    vertex = end
-
-    while vertex is not None:
-        path.append(vertex)
-        vertex = previous[vertex]
-
-    path.reverse()
-    return path
+    return visited, path
 
 
-G = Graph()
-G.add_vertex('a')
-G.add_vertex('b')
-G.add_vertex('c')
-G.add_vertex('d')
-G.add_vertex('e')
+def shortest_path(graph, origin, destination):
+    visited, paths = dijkstra(graph, origin)
+    full_path = deque()
+    _destination = paths[destination]
 
-G.add_edge('a', 'b', 2)
-G.add_edge('a', 'c', 8)
-G.add_edge('a', 'd', 5)
-G.add_edge('b', 'c', 1)
-G.add_edge('c', 'e', 3)
-G.add_edge('d', 'e', 4)
+    while _destination != origin:
+        full_path.appendleft(_destination)
+        _destination = paths[_destination]
 
-print(shortest_path(G, 'a', 'c'))
+    full_path.appendleft(origin)
+    full_path.append(destination)
 
+    return visited[destination], list(full_path)
 
+if __name__ == '__main__':
+    graph = Graph()
 
+    read_file = open('input.txt','r')
+    input_data = read_file.read().split(',')
+    for node in input_data:
+        graph.add_node(node)
 
+    graph.add_edge('A', 'B', 10)
+    graph.add_edge('A', 'C', 20)
+    graph.add_edge('B', 'D', 15)
+    graph.add_edge('C', 'D', 30)
+    graph.add_edge('B', 'E', 50)
+    graph.add_edge('D', 'E', 30)
+    graph.add_edge('E', 'F', 5)
+    graph.add_edge('F', 'G', 2)
 
-
-
-
-
-
-
-
+    print(shortest_path(graph, 'A', 'D'))
