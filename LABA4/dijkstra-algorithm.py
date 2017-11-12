@@ -63,20 +63,17 @@ def shortest_path(graph, origin, destination):
     return visited[destination], list(full_path)
 
 if __name__ == '__main__':
+
     graph = Graph()
+    with open('input.txt') as read_file:
+        n = int(read_file.readline())
+        for i in range(n):
+            node_list = read_file.readline().split()
+            graph.add_node(node_list[0])
+            graph.add_node(node_list[1])
+            graph.add_edge(node_list[0], node_list[1], int(node_list[2]))
+        points = read_file.readline().split()
+        start_point = points[0]
+        end_point = points[1]
 
-    read_file = open('input.txt','r')
-    input_data = read_file.read().split(',')
-    for node in input_data:
-        graph.add_node(node)
-
-    graph.add_edge('A', 'B', 10)
-    graph.add_edge('A', 'C', 20)
-    graph.add_edge('B', 'D', 15)
-    graph.add_edge('C', 'D', 30)
-    graph.add_edge('B', 'E', 50)
-    graph.add_edge('D', 'E', 30)
-    graph.add_edge('E', 'F', 5)
-    graph.add_edge('F', 'G', 2)
-
-    print(shortest_path(graph, 'A', 'D'))
+        print( shortest_path(graph, start_point, end_point))
