@@ -50,38 +50,45 @@ public class Main {
 
         BigInteger[] waysPrev = new BigInteger[height];
         BigInteger[] waysCurrent = new BigInteger[height];
-        Map<Character, BigInteger> map = new HashMap<>();
+        Map<Character, BigInteger> gridElements = new HashMap<>();
 
         // Всі можливі букви алфавіту -> в мапу (бо 1 буква = 1 ключ)
 
         for(Character ch : "abcdefghijklmnopqrstuvwxyz".toCharArray()){
-            map.put(ch, BigInteger.ZERO);
+            gridElements.put(ch, BigInteger.ZERO);
         }
 
         // Варіанти шляху по висоті і ширині
         // Суть завдання - можна рухатися тільки вправо на 1 або 2 плитки (букви)
 
+        //ставим дефолтне значення на початку шляху == 0
         for(int i = 0; i < height; i++){
             waysPrev[i] = waysCurrent[i] = BigInteger.ZERO;
         }
 
+        //прохід по плитках - визначення відповідності ключа до елементів на плитках.
+        //підрахунок пройдених плиток по висоті по к-сті вхідних даних ( для коридору )
+        //WaysPrev - к-сть шляхів (a-b-c) - типу 1 шлях
         for(int i = 0; i < height; i++){
             waysPrev[i] = BigInteger.ONE;
             Character key  = words[i].charAt(0);
-            map.put(key, map.get(key).add(BigInteger.ONE));
+            gridElements.put(key, gridElements.get(key).add(BigInteger.ONE));
         }
 
+        //підрахунок шляху по ширині
+        //якщо не співпадає можна перестрибувати
         for(int j = 1; j < width; j++){
             for(int i = 0; i < height; i++){
-                waysCurrent[i] = map.get(words[i].charAt(j));
-                if(words[i].charAt(j) != words[i].charAt(j - 1)){
-                    waysCurrent[i] = waysCurrent[i].add(waysPrev[i]);
+                waysCurrent[i] = gridElements.get(words[i].charAt(j));
+                if(words[i].charAt(j) != words[i].charAt(j - 1)){//якщо не співпадає з елеменами пройдених по висоті
+                    waysCurrent[i] = waysCurrent[i].add(waysPrev[i]); //підрах по ширині
                 }
             }
 
+            //обрахунок вихідного шляху
             for(int i = 0; i < height; i++){
                 Character key  = words[i].charAt(j);
-                map.put(key, map.get(key).add(waysCurrent[i]));
+                gridElements.put(key, gridElements.get(key).add(waysCurrent[i]));
             }
 
             BigInteger[] tmp = waysPrev;
